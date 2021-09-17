@@ -20,23 +20,26 @@ class DateParser:
         date_obj, period = parse_method(date_string, settings=settings)
 
         _settings_tz = settings.TIMEZONE.lower()
-
-        if ptz:
-            if hasattr(ptz, 'localize'):
-                date_obj = ptz.localize(date_obj)
-            else:
-                date_obj = date_obj.replace(tzinfo=ptz)
-            if 'local' not in _settings_tz:
-                date_obj = apply_timezone(date_obj, settings.TIMEZONE)
-        else:
-            if 'local' in _settings_tz:
-                stz = get_localzone()
-                if hasattr(stz, 'localize'):
-                    date_obj = stz.localize(date_obj)
+        
+        try:
+            if ptz:
+                if hasattr(ptz, 'localize'):
+                    date_obj = ptz.localize(date_obj)
                 else:
-                    date_obj = date_obj.replace(tzinfo=stz)
+                    date_obj = date_obj.replace(tzinfo=ptz)
+                if 'local' not in _settings_tz:
+                    date_obj = apply_timezone(date_obj, settings.TIMEZONE)
             else:
-                date_obj = localize_timezone(date_obj, settings.TIMEZONE)
+                if 'local' in _settings_tz:
+                    stz = get_localzone()
+                    if hasattr(stz, 'localize'):
+                        date_obj = stz.localize(date_obj)
+                    else:
+                        date_obj = date_obj.replace(tzinfo=stz)
+                else:
+                    date_obj = localize_timezone(date_obj, settings.TIMEZONE)
+        except:
+            pass
 
         if settings.TO_TIMEZONE:
             date_obj = apply_timezone(date_obj, settings.TO_TIMEZONE)
